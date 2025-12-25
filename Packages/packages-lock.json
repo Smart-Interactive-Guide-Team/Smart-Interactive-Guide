@@ -23,12 +23,28 @@
       "dependencies": {},
       "hash": "73a63b7f672b88f7e9992f6917eb458a8cbb6fa9"
     },
+    "com.dcfa_pixels.debugx": {
+      "version": "https://github.com/DCFApixels/Unity-DebugX.git#main",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "d4339eca973a926b42222c0e339859545964f807"
+    },
     "com.github-glitchenzo.nugetforunity": {
       "version": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
       "depth": 0,
       "source": "git",
       "dependencies": {},
       "hash": "34432703a177c97631a4eb1d908f086037c67969"
+    },
+    "com.singularitygroup.hotreload": {
+      "version": "file:com.singularitygroup.hotreload",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.ugui": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0"
+      }
     },
     "com.unity.2d.animation": {
       "version": "9.2.0",
@@ -175,12 +191,30 @@
         "com.unity.2d.aseprite": "1.1.9"
       }
     },
+    "com.unity.ide.antigravity": {
+      "version": "https://github.com/HarineshS/com.unity.ide.antigravity.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.test-framework": "1.1.9"
+      },
+      "hash": "794679caff96a62f747bb08bff8fe85bb0d0fc92"
+    },
     "com.unity.ide.rider": {
       "version": "3.0.38",
       "depth": 0,
       "source": "registry",
       "dependencies": {
         "com.unity.ext.nunit": "1.0.6"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.inputsystem": {
+      "version": "1.14.2",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.modules.uielements": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },
