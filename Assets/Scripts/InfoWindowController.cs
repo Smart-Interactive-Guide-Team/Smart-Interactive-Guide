@@ -1,33 +1,39 @@
 using System;
 using System.Linq;
 using DCFApixels;
-using DefaultNamespace;
+using MoreLinq;
 using R3;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InfoWindowController : MonoBehaviour
 {
-    [ShowInInspector, ReadOnly]
-    Guid _guid = Guid.NewGuid();
-
     [SerializeField]
     Collider2D _collider;
 
-    [SerializeField]
-    float _preferAngle;
-
-
-    InfoWindowConfig     _config;
-    LayoutSolvingService _layoutSolvingService;
-
     readonly Collider2D[] _overlapResult = new Collider2D[3];
-    Vector2               _velocity;
-    ExhibitController     _focus;
 
-    public void Construct(InfoWindowConfig config, LayoutSolvingService layoutSolvingService) {
-        _config               = config;
-        _layoutSolvingService = layoutSolvingService;
+    InfoWindowConfig  _config;
+    ExhibitController _focus;
+
+    [ShowInInspector, ReadOnly]
+    Guid _guid = Guid.NewGuid();
+
+    LayoutSolvingService      _layoutSolvingService;
+    LineOfSightSolvingService _lineOfSightSolvingService;
+    Vector2                   _velocity;
+
+    public void Construct(
+        InfoWindowConfig          config,
+        LayoutSolvingService      layoutSolvingService,
+        LineOfSightSolvingService lineOfSightSolvingService,
+        Color                     debugColor
+    ) {
+        _config                     = config;
+        _layoutSolvingService       = layoutSolvingService;
+        _lineOfSightSolvingService  = lineOfSightSolvingService;
+        GetComponent<Image>().color = debugColor;
 
         Observable
             .EveryUpdate(UnityFrameProvider.FixedUpdate)
@@ -40,11 +46,22 @@ public class InfoWindowController : MonoBehaviour
                 UpdateWindowPosition(bestAngle);
             })
             .AddTo(this);
+
+        Observable
+            .EveryUpdate()
+            .Subscribe(_ => {
+                if (!_focus) return;
+
+                DebugX.Draw(debugColor).WidthLine(transform.position, _focus.Center, 0.1f);
+            });
     }
 
     [Button]
     public void SetFocus(ExhibitController target) {
+        _focus?.SetObstacle(false);
+
         _focus = target;
+        _focus.SetObstacle(true);
     }
 
     void UpdateWindowPosition(float bestAngle) {
@@ -60,8 +77,10 @@ public class InfoWindowController : MonoBehaviour
     }
 
     float DetectBestAngle() {
+        var preferAngle = _lineOfSightSolvingService.GetPreferAngle(_focus.Center, _config.orbitRadius);
+
         for (var deltaAngle = 0; deltaAngle < 180; deltaAngle += 15) {
-            var testAngles = new[] { _preferAngle - deltaAngle, _preferAngle + deltaAngle };
+            var testAngles = new[] { preferAngle - deltaAngle, preferAngle + deltaAngle };
             foreach (var angle in testAngles) {
                 var offset = AngleToVector(angle) * _config.orbitRadius;
                 var center = (Vector2)_focus.transform.position + offset;
@@ -75,7 +94,9 @@ public class InfoWindowController : MonoBehaviour
 
                 var notValid = any || !inViewport;
 
-                if (notValid) continue;
+                if (notValid) {
+                    continue;
+                }
 
                 return angle;
             }
@@ -83,13 +104,18 @@ public class InfoWindowController : MonoBehaviour
 
         Debug.LogWarning("No best position");
 
-        return _preferAngle;
+        return preferAngle;
     }
 
     static void DrawDebugCube(bool any, bool inViewport, Bounds bounds) {
-        var debugColor              = Color.green;
-        if (any) debugColor         = Color.red;
-        if (!inViewport) debugColor = Color.blue;
+        var debugColor = Color.green;
+        if (any) {
+            debugColor = Color.red;
+        }
+
+        if (!inViewport) {
+            debugColor = Color.blue;
+        }
 
         DebugX
             .Draw(debugColor)
@@ -110,8 +136,10 @@ public class InfoWindowController : MonoBehaviour
         var any =
             _overlapResult
                 .Where(c => {
+                    if (!c) return false;
+
                     var notSelf      = c != _collider;
-                    var notSelfFocus = c != _focus._collider;
+                    var notSelfFocus = c != _focus.collider;
 
                     return notSelf && notSelfFocus;
                 })

@@ -1,18 +1,25 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace DefaultNamespace
+public class ExhibitController : MonoBehaviour
 {
-    public class ExhibitController : MonoBehaviour
-    {
-        [SerializeField]
-        public Collider2D _collider;
+    [SerializeField]
+    public new Collider2D collider;
 
-        [SerializeField]
-        LayerMask obstacle;
+    [SerializeField, Layer]
+    int obstacle;
 
-        public void SetObstacle() {
+    public Vector2 Center => collider.bounds.center;
+
+
+    int _defaultLayer;
+
+    public void SetObstacle(bool isSet) {
+        if (isSet) {
+            _defaultLayer    = gameObject.layer;
             gameObject.layer = obstacle;
+        }
+        else {
+            gameObject.layer = _defaultLayer;
         }
     }
 }
